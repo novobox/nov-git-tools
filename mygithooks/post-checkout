@@ -1,0 +1,28 @@
+#!/bin/sh
+
+path_to_changelog=/absolute-path/to/your/CHANGELOG.txt
+
+prevHEAD=$1
+newHEAD=$2
+checkoutType=$3
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+search="release"
+
+hh="$(echo $branch | grep $search)"
+
+hashfromlasttag="$(git log -1 --no-walk --tags --pretty="%H")"
+
+lasttag="$(git log -1 --no-walk --tags --pretty="%H")"
+#hash="$(git log -1 $lasttag --pretty='format:%H')"
+
+if [ $hh ] && [ $checkoutType = 1 ] ; then
+    echo "New Release : CHANGELOG "$path_to_changelog" updated..."
+    cp "$path_to_changelog" "$path_to_changelog".tmp
+    echo "["$branch"]" > "$path_to_changelog"
+    #echo "$(git log --pretty="+%s %b" $hashfromlasttag...HEAD)" >> "$path_to_changelog"
+    echo "$(git log --pretty="+%s" $hashfromlasttag...HEAD)" >> "$path_to_changelog"
+    echo "\n" >> "$path_to_changelog"
+    cat "$path_to_changelog".tmp >> "$path_to_changelog"
+    rm "$path_to_changelog".tmp
+fi

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "---Novtools installed------"
+echo "Cmd : 'novtools-' <TAB>"

@@ -1,0 +1,8 @@
+Package: novtools
+Version: 0.1
+Section: base
+Priority: optional
+Architecture: all
+Depends: bash
+Maintainer: novo <novo.sc2@gmail.com>
+Description: Novo's tools

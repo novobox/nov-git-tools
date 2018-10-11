@@ -1,0 +1,38 @@
+#!/bin/bash
+
+mkdir -p ~/.novtools
+
+#################
+#For self editing
+#################
+DIR_SELF_EDIT=~/.novtools/self-edit-dpkg
+DIR_SELF_DEPOT=~/.novtools/self-edit-dpkg/novtools
+
+#!!! XXX
+#CURRENT_DIRECTORY=$(cd `dirname $0` && pwd) # Ne marche pas car dpkg a son propre dossier
+CURRENT_DIRECTORY=$(pwd) #!!! XXX : implique qu'on installe que dans le dossier ou est situé le .deb (genre pas de dpkg -i dossier/machin.deb
+
+mkdir -p $DIR_SELF_EDIT
+mkdir -p $DIR_SELF_DEPOT
+
+#Where is deb package called
+CURRENT_DEB=$CURRENT_DIRECTORY/novtools.deb #Pour la premiere install (un deb dans un repertoire)
+GENERATED_DEB=$DIR_SELF_EDIT/novtools.deb #Le deb genere avec la fonction novtools-self-install
+
+#Extract files from deb to self edit dpkg
+if [ -f $CURRENT_DEB ];
+then
+    echo $CURRENT_DEB" - extract to "$DIR_SELF_DEPOT
+    dpkg-deb -x $CURRENT_DEB $DIR_SELF_DEPOT
+    dpkg-deb -e $CURRENT_DEB $DIR_SELF_DEPOT/DEBIAN
+else
+    if [ -f $GENERATED_DEB ];
+    then
+        echo $GENERATED_DEB" - extract to "$DIR_SELF_DEPOT
+        dpkg-deb -x $GENERATED_DEB $DIR_SELF_DEPOT
+        dpkg-deb -e $GENERATED_DEB $DIR_SELF_DEPOT/DEBIAN
+    else
+        echo $CURRENT_DEB" or "$GENERATED_DEB" does not exists. Skip."
+    fi
+fi
+################

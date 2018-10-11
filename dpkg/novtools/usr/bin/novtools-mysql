@@ -1,0 +1,140 @@
+#!/bin/bash
+
+FILECONF=~/.novtools/mysql-access
+
+help_func()
+{
+    echo -e '\e[33m'
+    echo 'Use of commands : novtools-mysql <command>'
+    echo 'Commands :'
+    echo '    createdb <database name>'
+    echo ''
+    echo 'Access db :'
+    echo '    Access bdd with options -h=HOST -u=USER -p=PASSWORD'
+    echo '    Save bdd access in FileConf to avoid (-h/-u/-p) with --reset option : "novtools-mysql --reset"'
+    echo ''
+    echo 'Samples :'
+    echo '    novtools-mysql createdb <database name> : Create a new base (if FileConf defined)'
+    echo '    novtools-mysql -h=host -u=user -p=pswwd createdb <database name>" : Create a new base (if FileConf is not defined)'
+    echo -e '\e[0m'
+
+    if [ -f $FILECONF ];
+    then
+        echo "Info : FileConf found"
+    else
+        echo "Info :" 
+        echo "    File $FILECONF does not exist."
+        echo "    Generate with --reset option or use -h / -u / -p options"
+        echo ''
+    fi
+
+}
+
+error_msg_func()
+{
+    echo -e "\e[41mERROR : $1 Check --help\e[0m"
+}
+ok_msg_func()
+{
+    echo -e "\e[32mOK! : $1\e[0m"
+}
+
+
+test_sql_params()
+{
+    if [ -z $HOST ]; then
+        error_msg_func "HOST variable undefined"
+        help_func
+        exit
+    fi
+    if [ -z $USERDB ]; then
+        error_msg_func "USERDB variable undefined"
+        help_func
+        exit
+    fi
+    if [ -z $PASSWORD ]; then
+        error_msg_func "PASSWORD variable undefined"
+        help_func
+        exit
+    fi
+}
+
+if [ -f $FILECONF ];
+then
+    source $FILECONF
+fi
+
+#Options
+########################################################
+
+for i in "$@"
+do
+case $i in
+    -h=*)
+    HOST="${i#*=}"
+    ;;
+    -u=*)
+    USERDB="${i#*=}"
+    ;;
+    -p=*)
+    PASSWORD="${i#*=}"
+    ;;
+    --help)
+        help_func
+    ;;
+    --reset)
+        if [ -f $FILECONF ];
+        then
+            rm -f $FILECONF
+            echo "$FILECONF deleted"
+        fi
+        echo "Host ?: "
+        read HOST
+        echo "USER ?: "
+        read USERDB
+        echo "PASSWORD ?: "
+        read PASSWORD
+
+        touch $FILECONF
+        echo "#!/bin/bash" > $FILECONF
+        echo HOST=${HOST} >> $FILECONF
+        echo USERDB=${USERDB} >> $FILECONF
+        echo PASSWORD=${PASSWORD} >> $FILECONF
+        echo ''
+        ok_msg_func "File $FILECONF generated"
+    ;;
+    *)
+    ;;
+
+esac
+
+done
+
+
+
+#Commands
+########################################################
+case $1 in
+    createdb)
+        test_sql_params
+        if [ ! -z $2 -a $2!=" " ]; then
+            echo "Create database $2 ?"
+            read -p "Is this a good question (y/n)? " answer
+            case ${answer:0:1} in
+                y|Y )
+                    mysql -h$HOST -u$USERDB -p$PASSWORD -e "CREATE DATABASE \`$2\` CHARACTER SET utf8 COLLATE utf8_general_ci;"
+                    echo "Database $2 created."
+                ;;
+                * )
+                    echo "Abort"
+                ;;
+            esac
+        else
+            error_msg_func "need a database name for this command."
+            help_func
+        fi
+    ;;
+    *)
+        help_func
+    ;;
+esac

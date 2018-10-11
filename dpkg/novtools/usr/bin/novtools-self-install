@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd ~/.novtools/self-edit-dpkg/
+sudo dpkg-deb --build novtools
+
+#uninstall if exists
+sudo dpkg -r novtools
+sudo dpkg -i novtools.deb
